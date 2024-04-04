@@ -1,40 +1,80 @@
 ﻿#include <iostream>
 
-enum Search { Jump, Fib, Inter };
+enum Search { Jump1, Jump2, Fib, Inter };
 
 int compN;
 
-int jumpSearch(int arr[], int n, int x)
-{
-    int step = sqrt(n);
-
+int oneLvlJumpSearch(int arr[], int n, int x, int step) {
     int prev = 0;
-    while (arr[std::min(step, n) - 1] < x) {
-        compN++;
+
+    while (compN++, arr[std::min(step, n) - 1] < x) {
         prev = step;
-        step += sqrt(n);
+        step += (int)sqrt(n);
         if (prev >= n)
             return -1;
-        
+
     }
 
-    while (arr[prev] < x) {
-        compN++;
+    while (compN++, arr[prev] < x) {
         prev++;
 
         if (prev == std::min(step, n))
             return -1;
     }
-    
-    compN++;
-    if (arr[prev] == x)
+
+    if (compN++, arr[prev] == x)
         return prev;
 
     return -1;
 }
 
-int fibonacciSearch(int arr[], int n, int x)
-{
+int oneLvlJumpSearch(int arr[], int n, int x) {
+    return oneLvlJumpSearch(arr, n, x, sqrt(n));
+}
+
+int twoLvlJumpSearch(int arr[], int n, int x) {
+    int step1 = (int)sqrt(n), step2 = (int)sqrt(step1);
+    int prev1 = 0, prev2 = step1;
+
+    while (compN++, arr[std::min(prev2, n) - 1] < x) {
+        prev1 = prev2;
+        prev2 += step1;
+        if (prev1 >= n)
+            return -1;
+    }
+
+    prev2 = prev1 + step2;
+    int end = prev1 + step1;
+
+    while (compN++, arr[std::min(prev2, end) - 1] < x) {
+        prev1 = prev2;
+        prev2 += step2;
+        if (prev1 >= end)
+            return -1;
+    }
+
+    while (compN++, arr[prev1] < x) {
+        prev1++;
+        if (prev1 == std::min(prev2, end))
+            return -1;
+    }
+
+    if (compN++, arr[prev1] == x)
+        return prev1;
+
+    return -1;
+}
+
+int jumpSearch(int arr[], int n, int x, int lvl) {
+    if (lvl == 1)
+        return oneLvlJumpSearch(arr, n, x);
+    else if (lvl == 2)
+        return twoLvlJumpSearch(arr, n, x);
+
+    return -1;
+}
+
+int fibonacciSearch(int arr[], int n, int x) {
     int f2 = 0;
     int f1 = 1;
     int f = f2 + f1;
@@ -50,14 +90,12 @@ int fibonacciSearch(int arr[], int n, int x)
     while (f > 1) {
         int i = std::min(offset + f2, n - 1);
 
-        compN++;
-        if (arr[i] < x) {
+        if (compN++, arr[i] < x) {
             f = f1;
             f1 = f2;
             f2 = f - f1;
             offset = i;
-        } else if (arr[i] > x) {
-            compN++;
+        } else if (compN++, arr[i] > x) {
             f = f2;
             f1 = f1 - f2;
             f2 = f - f1;
@@ -65,8 +103,7 @@ int fibonacciSearch(int arr[], int n, int x)
             return i;
     }
 
-    compN++;
-    if (f1 && arr[offset + 1] == x)
+    if (compN++, f1 && arr[offset + 1] == x)
         return offset + 1;
 
     return -1;
@@ -75,20 +112,17 @@ int fibonacciSearch(int arr[], int n, int x)
 int interpolationSearch(int arr[], int low, int high, int x) {
     int pos;
 
-    if (low <= high && x >= arr[low] && x <= arr[high]) {
+    if (low <= high && x >= arr[low] && x <= arr[high] && high != low) {
 
         pos = low + (((double)(high - low) / (arr[high] - arr[low])) * (x - arr[low]));
 
-        compN++;
-        if (arr[pos] == x)
+        if (compN++, arr[pos] == x)
             return pos;
 
-        compN++;
-        if (arr[pos] < x)
+        if (compN++, arr[pos] < x)
             return interpolationSearch(arr, pos + 1, high, x);
 
-        compN++;
-        if (arr[pos] > x)
+        if (compN++, arr[pos] > x)
             return interpolationSearch(arr, low, pos - 1, x);
     }
     return -1;
@@ -143,49 +177,80 @@ void genArr(int arr[], int n) {
     radixSort(arr, n);
 }
 
-void countCompN(int arr[], int n, int x, Search s) {
-    int res = -1;
-
+int countCompN(int arr[], int n, int x, Search s) {
     switch (s) {
-    case Jump:
+    case Jump1:
         compN = 0;
-        res = jumpSearch(arr, n, x);
+        jumpSearch(arr, n, x, 1);
+        break;
+    case Jump2:
+        compN = 0;
+        jumpSearch(arr, n, x, 2);
         break;
     case Fib:
         compN = 0;
-        res = fibonacciSearch(arr, n, x);
+        fibonacciSearch(arr, n, x);
         break;
     case Inter:
         compN = 0;
-        res = interpolationSearch(arr, 0, n - 1, x);
+        interpolationSearch(arr, 0, n - 1, x);
         break;
     }
 
-    if (res == -1) {
-        std::cout << "Unsuccessfull search. " << compN << " comparisons." << std::endl;
-    } else {
-        std::cout << "Successfull search. " << compN << " comparisons." << std::endl;
+    return compN;
+}
+
+void getAvg(int arr[], Search s, int iters = 100, int unsuccess = 0) {
+    int total = 0;
+    for (int n = 10000; n <= 100000; n += 10000) {
+        arr = new int[n];
+        for (int j = 0; j < iters; j++) {
+            genArr(arr, n);
+            int x = arr[(int)((double)rand() / RAND_MAX * n)] + unsuccess;
+            total += countCompN(arr, n, x, s);
+        }
+        std::cout << total / iters << std::endl;
+        total = 0;
+    }
+    std::cout << std::endl;
+}
+
+void getMod(int arr[], int iters = 100) {
+    int total = 0;
+    for (int n = 100; n <= 1000; n += 100) {
+        arr = new int[n];
+        std::cout << n << ": ";
+        for (int s = 1; s <= n / 2; s++) {
+            for (int i = 0; i < iters; i++) {
+                genArr(arr, n);
+                int x = arr[(int)((double)rand() / RAND_MAX * n)];
+                oneLvlJumpSearch(arr, n, x, s);
+                total += compN;
+                compN = 0;
+            }
+            std::cout << total / iters << ", ";
+            total = 0;
+        }
+        std::cout << "\b\b." << std::endl;
     }
 }
 
 int main(int argc, char** argv) {
-    const int n = 500, step = 9;
-    int *arr = new int[n];
-    int x;
-    // Шаг step. Числа от step до step * n
-    genArr(arr, n);
+    int *arr = nullptr;
+    bool successful = false;
 
-    countCompN(arr, n, x, Jump);
-    countCompN(arr, n, x, Fib);
-    countCompN(arr, n, x, Inter);
+    srand((unsigned)time(NULL));
 
-    x = 2565;
-    countCompN(arr, n, x, Jump);
-    countCompN(arr, n, x, Fib);
-    countCompN(arr, n, x, Inter);
+    /*getAvg(arr, Jump1, 500, 0);
+    getAvg(arr, Jump2, 500, 0);
+    getAvg(arr, Fib, 500, 0);
+    getAvg(arr, Inter, 500, 0);
+    std::cout << std::endl; 
 
-    x = 4356;
-    countCompN(arr, n, x, Jump);
-    countCompN(arr, n, x, Fib);
-    countCompN(arr, n, x, Inter);
+    getAvg(arr, Jump1, 500, 1);
+    getAvg(arr, Jump2, 500, 1);
+    getAvg(arr, Fib, 500, 1);
+    getAvg(arr, Inter, 500, 1);*/
+
+    getMod(arr, 100);
 }

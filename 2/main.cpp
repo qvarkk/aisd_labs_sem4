@@ -8,7 +8,7 @@
 #define ARR_MAX 10000
 int operationCount = 0;
 
-void swap(int* arr, int a, int b) {
+void swap(int *arr, int a, int b) {
 	int tmp = arr[a];
 	arr[a] = arr[b];
 	arr[b] = tmp;
@@ -79,6 +79,7 @@ int partition(int *arr, int low, int high) {
 	int i = low - 1;
 
 	for (int j = low; j <= high; j++) {
+		operationCount++;
 		if (arr[j] < pivot) {
 			i++;
 			swap(arr, i, j);
@@ -93,11 +94,11 @@ void quickSort(int *arr, int N) {
 	s.push({ 0, N - 1 });
 
 	while (!s.empty()) {
-		std::pair<int, int> range = s.top();
+		std::pair<int, int> p = s.top();
 		s.pop();
 
-		int low = range.first;
-		int high = range.second;
+		int low = p.first;
+		int high = p.second;
 
 		if (low < high) {
 			int pi = partition(arr, low, high);
@@ -114,14 +115,15 @@ void heapify(int *arr, int N, int i) {
 	int l = 2 * i + 1;
 	int r = 2 * i + 2;
 
+	operationCount++;
 	if (l < N && arr[l] > arr[largest])
 		largest = l;
 
+	operationCount++;
 	if (r < N && arr[r] > arr[largest])
 		largest = r;
 
 	if (largest != i) {
-		// std::swap(arr[largest], arr[i]);
 		swap(arr, largest, i);
 		heapify(arr, N, largest);
 	}
@@ -132,7 +134,6 @@ void heapSort(int *arr, int N) {
 		heapify(arr, N, i);
 
 	for (int i = N - 1; i > 0; i--) {
-		// std::swap(arr[0], arr[i]);
 		swap(arr, 0, i);
 		heapify(arr, i, 0);
 	}
@@ -142,6 +143,7 @@ void heapSort(int *arr, int N) {
 int getMax(int *arr, int N) {
 	int tmp = arr[0];
 	for (int i = 1; i < N; i++) {
+		operationCount++;
 		if (tmp < arr[i])
 			tmp = arr[i];
 	}
@@ -183,12 +185,10 @@ bool isSorted(int* arr, int N) {
 	return true;
 }
 
-int cmp(const void* a, const void* b) { operationCount++; return (*(int*)a) - (*(int*)b); }
-
-void printTimeComplexity(void func(int*, int), int N) {
+void printBigO(void func(int*, int), int N) {
 	int min = ARR_MIN, max = ARR_MAX;
 	int *arr = new int[N];
-	std::string method[4] = {"Increasing", "Decreasing", "Randomeow", "Sawtoothed"};
+	std::string method[4] = {"Increasing", "Decreasing", "Randomeowed", "Sawtoothed"};
 
 	for (int i = 0; i < 4; i++) {
 		fillArray(arr, N, min, max, (Method)i);
@@ -196,15 +196,11 @@ void printTimeComplexity(void func(int*, int), int N) {
 		auto start = std::chrono::high_resolution_clock::now();
 
 		operationCount = 0;
-		std::qsort((void*)arr, N, sizeof(int), cmp);
+		func(arr, N);
 
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double, std::milli> time = end - start;
-		std::cout << method[i] << ". " << time.count() << "\tComparisons: " << operationCount << std::endl;
-		if (!isSorted(arr, N)) {
-			std::cout << "Unsorted..." << std::endl;
-			return;
-		}
+		std::cout << method[i] << ". " << time.count()  << "\tComparisons: " << operationCount << std::endl;
 	}
 }
 
@@ -215,25 +211,17 @@ void printArray(int *arr, int size) {
  }
 
 int main(int argc, char** argv) {
-	srand((unsigned int)time(NULL));
-
+	srand(time(NULL));
 	
 	for (int i = 500; i < 5001; i += 500) {
 		std::cout << "\n\tSIZE: " << i << std::endl;
 		std::cout << "Quicksort: " << std::endl;
-		printTimeComplexity(quickSort, i);
+		printBigO(quickSort, i);
 		std::cout << "\nHeapsort: " << std::endl;
-		printTimeComplexity(heapSort, i);
+		printBigO(heapSort, i);
 		std::cout << "\nRadix sort: " << std::endl;
-		printTimeComplexity(radixSort, i);
+		printBigO(radixSort, i);
 	}
-	
-	/*
-	for (int i = 500; i < 5001; i += 500) {
-		std::cout << "\n\tSIZE: " << i << std::endl;
-		std::cout << "qsort: " << std::endl;
-		printTimeComplexity(quickSort, i);
-	}
-	*/
+
 	return 0;
 }

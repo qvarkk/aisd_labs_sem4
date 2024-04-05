@@ -6,10 +6,11 @@ int compN;
 
 int oneLvlJumpSearch(int arr[], int n, int x, int step) {
     int prev = 0;
+    int fixStep = step;
 
     while (compN++, arr[std::min(step, n) - 1] < x) {
         prev = step;
-        step += (int)sqrt(n);
+        step += fixStep;
         if (prev >= n)
             return -1;
 
@@ -217,9 +218,9 @@ void getAvg(int arr[], Search s, int iters = 100, int unsuccess = 0) {
 
 void getMod(int arr[], int iters = 100) {
     int total = 0;
-    for (int n = 100; n <= 1000; n += 100) {
+    for (int n = 100; n <= 500; n += 100) {
+        std::cout << "Array size: " << n << std::endl;
         arr = new int[n];
-        std::cout << n << ": ";
         for (int s = 1; s <= n / 2; s++) {
             for (int i = 0; i < iters; i++) {
                 genArr(arr, n);
@@ -228,10 +229,10 @@ void getMod(int arr[], int iters = 100) {
                 total += compN;
                 compN = 0;
             }
-            std::cout << total / iters << ", ";
+            std::cout << total / iters << std::endl;
             total = 0;
         }
-        std::cout << "\b\b." << std::endl;
+        std::cout << "\n\n" << std::endl;
     }
 }
 
@@ -241,7 +242,7 @@ int main(int argc, char** argv) {
 
     srand((unsigned)time(NULL));
 
-    /*getAvg(arr, Jump1, 500, 0);
+    getAvg(arr, Jump1, 500, 0);
     getAvg(arr, Jump2, 500, 0);
     getAvg(arr, Fib, 500, 0);
     getAvg(arr, Inter, 500, 0);
@@ -250,7 +251,7 @@ int main(int argc, char** argv) {
     getAvg(arr, Jump1, 500, 1);
     getAvg(arr, Jump2, 500, 1);
     getAvg(arr, Fib, 500, 1);
-    getAvg(arr, Inter, 500, 1);*/
+    getAvg(arr, Inter, 500, 1);
 
-    getMod(arr, 100);
+    // getMod(arr, 1000);
 }

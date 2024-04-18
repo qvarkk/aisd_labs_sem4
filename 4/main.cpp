@@ -9,7 +9,7 @@ std::vector<int> search(char* pat, char* txt, int base = 256, int mod = INT_MAX)
 	int txtHash = 0;
 	int power = 1;
 	std::vector<int> out;
-	
+
 	for (int i = 0; i < m; i++)
 		power = (power * base) % mod;
 
@@ -42,10 +42,9 @@ std::vector<int> search(char* pat, char* txt, int base = 256, int mod = INT_MAX)
 	return out;
 }
 
-// A-Z, a-z, |, \, ], ^, _.
 void randCharArray(char* arr, int n) {
 	for (int i = 0; i < n; i++)
-		arr[i] = 'A' + rand() % 57;
+		arr[i] = rand() % 255 + 1;
 }
 
 void getTimeComplexity(int initStrSize, int maxStrSize, int initPatSize, int maxPatSize, int iters = 100) {

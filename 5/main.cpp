@@ -101,7 +101,6 @@ int main() {
 	insert(root, 185);
 	insert(root, 195);
 
-
 	print(root);
 
 	return 0;

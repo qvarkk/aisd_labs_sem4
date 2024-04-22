@@ -1,103 +1,118 @@
-#include <iostream>
+﻿#include <iostream>
 #include <chrono>
 #include <vector>
+#include <string>
 
-void search(char* pat, char* txt, int base = 256, int mod = INT_MAX) {
-	int m = std::strlen(pat);
-	int n = std::strlen(txt);
-	int patHash = 0;
-	int txtHash = 0;
+// Алгоритм поиска подстрок Рабина-Карпа
+int search(std::string sub, std::string str, int base = 256, int mod = INT_MAX) {
+	int m = sub.length();
+	int n = str.length();
+
+	int subHash = 0;
+	int strHash = 0;
 	int power = 1;
 
 	for (int i = 0; i < m; i++)
 		power = (power * base) % mod;
 
 	for (int i = 0; i < m; i++) {
-		patHash = (base * patHash + pat[i]) % mod;
-		txtHash = (base * txtHash + txt[i]) % mod;
+		subHash = (base * subHash + sub[i]) % mod;
+		strHash = (base * strHash + str[i]) % mod;
 	}
 
 	for (int i = 0; i <= n - m; i++) {
-		if (patHash == txtHash) {
+		if (subHash == strHash) {
 			int j;
 			for (j = 0; j < m; j++) {
-				if (txt[i + j] != pat[j]) {
+				if (str[i + j] != sub[j]) {
 					break;
 				}
 			}
 
 			if (j == m)
-				std::cout << "Found pattern at " << i << std::endl;
+				return i;
 		}
 
 		if (i < n - m) {
-			txtHash = (base * (txtHash - txt[i] * power) + txt[i + m]) % mod;
+			strHash = (base * (strHash - str[i] * power) + str[i + m]) % mod;
 
-			if (txtHash < 0)
-				txtHash = (txtHash + mod);
+			if (strHash < 0)
+				strHash = (strHash + mod);
 		}
 	}
+
+	return -1;
 }
 
-void randCharArray(char* arr, int n) {
+// Генерация случайной строки
+std::string randStr(int n) {
+	std::string res;
+
 	for (int i = 0; i < n; i++)
-		arr[i] = rand() % 255 + 1;
+		res += 'a' + rand() % 26;
+
+	return res;
 }
 
-void getTimeComplexity(int iters = 500) {
-	char* txt = new char[100000];
-	char* pat = new char[2000];
-	randCharArray(pat, 2000);
-	std::cout << "pat: 2000." << std::endl;
-	std::cout << "txt\ttime" << std::endl;
-	for (int i = 10000; i <= 100000; i += 10000) {
-		double total = 0;
-		for (int k = 0; k < iters; k++) {
-			randCharArray(txt, i);
+// Генерация подстроки
+std::string getSubstring(std::string str, int subSize) {
+	int margin = str.length() / 2;
+	std::string res;
 
-			auto start = std::chrono::high_resolution_clock::now();
+	for (int i = 0; i < subSize; i++)
+		res += str[margin + i];
 
-			//search(pat, txt);
-			strstr(txt, pat);
+	return res;
+}
 
-			auto end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> time = end - start;
-			total += time.count();
-		}
-		std::cout << i << "\t" << total / iters << std::endl;
-	}
+void getStrDiffTime() {
+	int strSize = 1000000;
+	int strStartSize = strSize / 10;
+	int subSize = 100;
 
-	if (pat)
-		delete[] pat;
-	pat = new char[50000];
+	std::cout << "str\ttime" << std::endl;
 
-	if (txt)
-		delete[] txt;
-	txt = new char[100000];
-	randCharArray(txt, 100000);
-	std::cout << "\ntxt: 100000." << std::endl;
-	std::cout << "pat\ttime" << std::endl;
-	for (int i = 5000; i <= 50000; i += 5000) {
-		double total = 0;
-		for (int k = 0; k < iters; k++) {
-			randCharArray(pat, i);
+	for (int i = strStartSize; i <= strSize; i += strStartSize) {
+		std::string str = randStr(i);
+		std::string sub = getSubstring(str, subSize);
 
-			auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 
-			//search(pat, txt);
-			strstr(txt, pat);
+		if (search(sub, str) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		// if (str.find(sub) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
 
-			auto end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> time = end - start;
-			total += time.count();
-		}
-		std::cout << i << "\t" << total / iters << std::endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> res = end - start;
+		std::cout << i << "\t" << res.count() << std::endl;
 	}
 }
 
-int main(int argc, char** argv) {
-	
-	getTimeComplexity();
+void getSubDiffTime() {
+	int subSize = 100;
+	int subStartSize = subSize / 10;
+	int strSize = 1000000;
+
+	std::cout << "sub\ttime" << std::endl;
+
+	std::string str = randStr(strSize);
+	for (int i = subStartSize; i <= subSize; i += subStartSize) {
+		std::string sub = getSubstring(str, i);
+
+		auto start = std::chrono::high_resolution_clock::now();
+
+		if (search(sub, str) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		// if (str.find(sub) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> res = end - start;
+		std::cout << i << "\t" << res.count() << std::endl;
+	}
+}
+
+int main() {
+	getStrDiffTime();
+	std::cout << std::endl;
+	getSubDiffTime();
 
 	return 0;
 }

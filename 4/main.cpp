@@ -74,12 +74,13 @@ void getStrDiffTime() {
 
 	for (int i = strStartSize; i <= strSize; i += strStartSize) {
 		std::string str = randStr(i);
-		std::string sub = getSubstring(str, subSize);
+		// std::string sub = getSubstring(str, subSize);
+		std::string sub = randStr(subSize);
 
 		auto start = std::chrono::high_resolution_clock::now();
 
-		if (search(sub, str) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
-		// if (str.find(sub) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		// if (search(sub, str) != -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		if (str.find(sub) != -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
 
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double, std::milli> res = end - start;
@@ -96,12 +97,13 @@ void getSubDiffTime() {
 
 	std::string str = randStr(strSize);
 	for (int i = subStartSize; i <= subSize; i += subStartSize) {
-		std::string sub = getSubstring(str, i);
+		// std::string sub = getSubstring(str, i);
+		std::string sub = randStr(i);
 
 		auto start = std::chrono::high_resolution_clock::now();
 
-		if (search(sub, str) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
-		// if (str.find(sub) == -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		if (search(sub, str) != -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
+		// if (str.find(sub) != -1) std::cout << "Couldn't find substring in what should be a successful case" << std::endl;
 
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double, std::milli> res = end - start;

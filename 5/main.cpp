@@ -1,107 +1,97 @@
 #include <iostream>
 #include <queue>
 
-struct Node { 
-	int data;
+class Node { 
+public:
+	Node() : key(0), left(nullptr), right(nullptr), parent(nullptr) {};
+	Node(int key) : left(nullptr), right(nullptr), parent(nullptr) { this->key = key; };
+	int key;
 	Node* left;
 	Node* right;
+	Node* parent;
 };
 
-Node* newNode(int data) {
-	Node* n = new Node;
-	n->left = nullptr;
-	n->right = nullptr;
-	n->data = data;
-	return n;
+class Tree {
+public:
+	Node* root;
+	Tree() : root(nullptr) {};
+	static Tree genSortedTree(int size);
+	static Tree genRandomTree(int size);
+	void insert(int key);
+	Node* find(Node* node, int key);
+	Node* remove(Node* node, int key);
+	Node* getInorderSucc(Node* node);
+	void preorderTraversal(void func(Node*));
+	void postorderTraversal(void func(Node*));
+	void print();
+	int getHeight();
+	int getNodesCount();
+};
+
+void Tree::insert(int key) {
+	if (!root) {
+		root = new Node(key);
+		return;
+	}
+
+	Node* tmp = root, *parent = root;
+	while (tmp != nullptr) {
+		if (key < tmp->key) {
+			parent = tmp;
+			tmp = tmp->left;
+		} else {
+			parent = tmp;
+			tmp = tmp->right;
+		}
+	}
+
+	Node* node = new Node(key);
+	node->parent = parent;
+	if (key < parent->key) {
+		parent->left = node;
+	} else {
+		parent->right = node;
+	}
 }
 
-Node* insert(Node* root, int data) {
-	if (!root)
-		return newNode(data);
-	else
-		if (data < root->data)
-			root->left = insert(root->left, data);
-		else
-			root->right = insert(root->right, data);
-
-	return root;
+Node* Tree::find(Node* node, int key) {
+	if (!node) return nullptr;
+	else if (node->key == key) return node;
+	else if (key < node->key) find(node->left, key);
+	else find(node->right, key);
 }
 
-Node* search(Node* root, int data) {
-	if (!root) return nullptr;
-
-	if (data == root->data)
-		return root;
-	else if (data < root->data)
-		return search(root->left, data);
-	else
-		return search(root->right, data);
+Node* Tree::getInorderSucc(Node* node) {
+	Node* tmp = node;
+	while (tmp->left != nullptr) {
+		tmp = tmp->left;
+	}
+	return tmp;
 }
 
-Node* remove(Node* root, int data) {
-	if (!root) return nullptr;
-}
+Node* Tree::remove(Node* node, int key) {
+	if (!root || !node) return nullptr;
 
-void preorderTraversal(Node* root, void function(Node*)) {
-	if (!root) return;
+	if (key < node->key) {
+		node->left = remove(node->left, key);
+		return node;
+	} else if (key > node->key) {
+		node->right = remove(node->right, key);
+		return node;
+	}
 
-	function(root);
-	preorderTraversal(root->left, function);
-	preorderTraversal(root->right, function);
-}
-
-void inorderTraversal(Node* root, void function(Node*)) {
-	if (!root) return;
-
-	preorderTraversal(root->left, function);
-	function(root);
-	preorderTraversal(root->right, function);
-}
-
-void postorderTraversal(Node* root, void function(Node*)) {
-	if (!root) return;
-
-	preorderTraversal(root->left, function);
-	preorderTraversal(root->right, function);
-	function(root);
-}
-
-void print(Node* root) {
-	preorderTraversal(root, [](Node* node) {
-		std::cout << node << ": " << node->data << std::endl;
-		std::cout << "\tL: " << node->left << std::endl;
-		std::cout << "\tR: " << node->right << "\n" << std::endl;
-	});
+	if (node->right)
 }
 
 int main() {
-	Node* root = newNode(100);
-	insert(root, 80);
-	insert(root, 40);
-	insert(root, 90);
-	insert(root, 25);
-	insert(root, 55);
-	insert(root, 15);
-	insert(root, 85);
-	insert(root, 95);
-	insert(root, 5);
-	insert(root, 110);
-	insert(root, 45);
-	insert(root, 65);
-	insert(root, 35);
-	insert(root, 75);
-	insert(root, 105);
-	insert(root, 115);
-	insert(root, 125);
-	insert(root, 135);
-	insert(root, 145);
-	insert(root, 155);
-	insert(root, 165);
-	insert(root, 175);
-	insert(root, 185);
-	insert(root, 195);
-
-	print(root);
+	Tree tr = Tree();
+	tr.insert(50);
+	tr.insert(70);
+	tr.insert(30);
+	tr.insert(40);
+	tr.insert(60);
+	tr.insert(90);
+	tr.insert(55);
 
 	return 0;
 }

@@ -3,9 +3,10 @@
 
 class Node { 
 public:
-	Node() : key(0), left(nullptr), right(nullptr), parent(nullptr) {};
-	Node(int key) : left(nullptr), right(nullptr), parent(nullptr) { this->key = key; };
+	Node() : key(0), size(1), left(nullptr), right(nullptr), parent(nullptr) {};
+	Node(int key) : size(1), left(nullptr), right(nullptr), parent(nullptr) { this->key = key; };
 	int key;
+	int size;
 	Node* left;
 	Node* right;
 	Node* parent;
@@ -13,11 +14,13 @@ public:
 
 class Tree {
 public:
-	int size;
 	Node* root;
-	Tree() : size(0), root(nullptr) {};
-	void insert(int key); 
-	void insertAtRoot(int key);
+	Tree() : root(nullptr) {};
+	Node* insert(int key);
+	Node* insert(Node* root, int key);
+	Node* insert(Node* root, Node* parent, int key);
+	Node* insertAtRoot(Node* node, int key);
+	Node* randomizedInsert(Node* node, int key);
 	Node* find(Node* node, int key);
 	Node* getInorderSucc(Node* node);
 	Node* remove(Node* node, int key);
@@ -26,72 +29,104 @@ public:
 	void print();
 	int getHeight(Node* node);
 	int countNodes(Node* node);
-	void rotateRight();
-	void rotateLeft();
+	int getSize(Node* node);
+	void fixSize(Node* node);
+	Node* rotateRight(Node* node);
+	Node* rotateLeft(Node* node);
 	static Tree genTreeWithRandomValues(int size);
+	static Tree genRandomizedTree(int size);
 };
 
+// Вставка узла в дерево (обертка)
+Node* Tree::insert(int key) {
+	return insert(root, nullptr, key);
+}
+
 // Вставка узла в дерево
-void Tree::insert(int key) {
-	if (!root) {
-		root = new Node(key);
-		return;
+Node* Tree::insert(Node* node, Node* parent, int key) {
+	if (!node) {
+		Node* newNode = new Node(key);
+		newNode->parent = parent;
+
+		if (!root)
+			root = newNode;
+
+		return newNode;
 	}
 
-	Node* tmp = root, *parent = root;
-	while (tmp != nullptr) {
-		if (key < tmp->key) {
-			parent = tmp;
-			tmp = tmp->left;
-		} else {
-			parent = tmp;
-			tmp = tmp->right;
-		}
+	if (key < node->key) {
+		node->left = insert(node->left, node, key);
+	} else if (key > node->key) {
+		node->right = insert(node->right, node, key);
 	}
 
-	Node* node = new Node(key);
-	node->parent = parent;
-	if (key < parent->key) {
-		parent->left = node;
+	fixSize(node);
+	return node;
+}
+
+// Вставка узла в дерево (без задания родителя, нужно для рандомизированного дерева)
+Node* Tree::insert(Node* node, int key) {
+	if (!node) {
+		Node* newNode = new Node(key);
+
+		if (!root)
+			root = newNode;
+
+		return newNode;
+	}
+
+	if (key < node->key) {
+		node->left = insert(node->left, key);
+	} else if (key > node->key) {
+		node->right = insert(node->right, key);
+	}
+
+	fixSize(node);
+	return node;
+}
+
+// Вставка узла в корень дерева
+Node* Tree::insertAtRoot(Node* node, int key) {
+	if (!node) {
+		Node* newNode = new Node(key);
+
+		if (!root)
+			root = newNode;
+
+		return newNode;
+	}
+
+	if (key < node->key) {
+		node->left = insertAtRoot(node->left, key);
+		return rotateRight(node);
 	} else {
-		parent->right = node;
+		node->right = insertAtRoot(node->right, key);
+		return rotateLeft(node);
 	}
 }
 
-// Вставка узла в корень дерева (не работает)
-void Tree::insertAtRoot(int key) {
-	Node* newNode = new Node(key);
+// Случайная вставка meow meow me me meow миу мау миу мау ла ла ла ла ла       миу мау миу мау ла ла ла ла ла
+Node* Tree::randomizedInsert(Node* node, int key) {
+	if (!node) {
+		Node* newNode = new Node(key);
 
-	if (!root) {
-		root = newNode;
-		return;
+		if (!root)
+			root = newNode;
+
+		return newNode;
 	}
 
-	Node* current = root;
-	Node* tmp = nullptr;
-
-	while (current) {
-		tmp = current;
-		if (key < current->key)
-			current = current->left;
-		else
-			current = current->right;
+	if (rand() % (node->size + 1) == 0) {
+		return insertAtRoot(node, key);
 	}
 
-	newNode->parent = tmp;
-
-	if (key < tmp->key)
-		tmp->left = newNode;
+	if (key < node->key)
+		node->left = randomizedInsert(node->left, key);
 	else
-		tmp->right = newNode;
+		node->right = randomizedInsert(node->right, key);
 
-	while (newNode->parent != nullptr) {
-		if (newNode->parent->left == newNode) {
-			rotateRight();
-		} else {
-			rotateLeft();
-		}
-	}
+	fixSize(node);
+	return node;
 }
 
 // Поиск узла по дереву
@@ -143,6 +178,7 @@ Node* Tree::remove(Node* node, int key) {
 		succ->parent->right = succ->right;
 
 	delete succ;
+
 	return node;
 }
 
@@ -189,6 +225,17 @@ int Tree::countNodes(Node* node) {
 		return 1 + countNodes(node->left) + countNodes(node->right);
 }
 
+// Получить количество узлов в дереве/поддереве
+int Tree::getSize(Node* node) {
+	if (!node) return 0;
+	return node->size;
+}
+
+// Записать количество узлов в дереве/поддереве
+void Tree::fixSize(Node* node) {
+	node->size = getSize(node->left) + getSize(node->right) + 1;
+}
+
 // Получить высоту дерева
 int Tree::getHeight(Node* node) {
 	if (!node) return -1;
@@ -200,33 +247,35 @@ int Tree::getHeight(Node* node) {
 }
 
 // Поворот дерева влево
-void Tree::rotateLeft() {
-	if (!root || !root->right) return;
+Node* Tree::rotateLeft(Node* node) {
+	if (!node->right) return node;
 
-	Node* newRoot = root->right;
-	root->right = newRoot->left;
-	if (newRoot->left)
-		newRoot->left->parent = root;
+	Node* r = node->right;
+	if (node == root) 
+		root= r;
 
-	newRoot->left = root;
-	newRoot->parent = nullptr;
-	root->parent = newRoot;
-	root = newRoot;
+	node->right = r->left;
+	r->left = node;
+	r->size = node->size;
+	fixSize(node);
+
+	return r;
 }
 
 // Поворот дерева вправо
-void Tree::rotateRight() {
-	if (!root || !root->left) return;
+Node* Tree::rotateRight(Node* node) {
+	if (!node->left) return node;
 
-	Node* newRoot = root->left;
-	root->left = newRoot->right;
-	if (newRoot->right)
-		newRoot->right->parent = root;
+	Node* l = node->left;
+	if (node == root)
+		root = l;
+	
+	node->left = l->right;
+	l->right = node;
+	l->size = node->size;
+	fixSize(node);
 
-	newRoot->right = root;
-	newRoot->parent = nullptr;
-	root->parent = newRoot;
-	root = newRoot;
+	return l;
 }	
 
 
@@ -243,18 +292,20 @@ Tree Tree::genTreeWithRandomValues(int size) {
 	return tr;
 }
 
-int main() {
-	Tree tr = Tree();
-	tr.insert(50);
-	tr.insert(70);
-	tr.insert(30);
-	tr.insert(40);
-	tr.insert(60);
-	tr.insert(90);
-	tr.insert(55);
+Tree Tree::genRandomizedTree(int size) {
+	srand((unsigned)time(nullptr));
 
-	tr.insertAtRoot(80);
-	tr.print();
+	Tree tr;
+
+	for (int i = 0; i < size; i++) {
+		tr.randomizedInsert(tr.root, i);
+	}
+
+	return tr;
+}
+
+int main() {
+	
 
 	return 0;
 }

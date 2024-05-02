@@ -29,12 +29,13 @@ public:
 	void print();
 	int getHeight(Node* node);
 	int countNodes(Node* node);
+	int individual(Node* node);
 	int getSize(Node* node);
 	void fixSize(Node* node);
 	Node* rotateRight(Node* node);
 	Node* rotateLeft(Node* node);
-	static Tree genTreeWithRandomValues(int size);
-	static Tree genRandomizedTree(int size);
+	static Tree genTree(int size, bool random);
+	static Tree genRandomizedTree(int size, bool random);
 };
 
 // Вставка узла в дерево (обертка)
@@ -60,28 +61,6 @@ Node* Tree::insert(Node* node, Node* parent, int key) {
 		node->right = insert(node->right, node, key);
 	}
 
-	fixSize(node);
-	return node;
-}
-
-// Вставка узла в дерево (без задания родителя, нужно для рандомизированного дерева)
-Node* Tree::insert(Node* node, int key) {
-	if (!node) {
-		Node* newNode = new Node(key);
-
-		if (!root)
-			root = newNode;
-
-		return newNode;
-	}
-
-	if (key < node->key) {
-		node->left = insert(node->left, key);
-	} else if (key > node->key) {
-		node->right = insert(node->right, key);
-	}
-
-	fixSize(node);
 	return node;
 }
 
@@ -225,6 +204,16 @@ int Tree::countNodes(Node* node) {
 		return 1 + countNodes(node->left) + countNodes(node->right);
 }
 
+// Вариант 7. Посчитать сумму четных чисел во внутренних узлах
+int Tree::individual(Node* node) {
+	if (!node) 
+		return 0;
+	else if (node->key % 2 == 0 && (node->left || node->right))
+		return node->key + individual(node->left) + individual(node->right);
+	else
+		return individual(node->left) + individual(node->right);
+}
+
 // Получить количество узлов в дереве/поддереве
 int Tree::getSize(Node* node) {
 	if (!node) return 0;
@@ -280,32 +269,61 @@ Node* Tree::rotateRight(Node* node) {
 
 
 // Генерация дерева со случайными узлами
-Tree Tree::genTreeWithRandomValues(int size) {
+Tree Tree::genTree(int size, bool random) {
 	srand((unsigned)time(nullptr));
 
 	Tree tr;
 
 	for (int i = 0; i < size; i++) {
-		tr.insert(rand());
+		tr.insert(random ? rand() : i);
 	}
 
 	return tr;
 }
 
-Tree Tree::genRandomizedTree(int size) {
+// Генерация рандомизированного дерева (RBST)
+Tree Tree::genRandomizedTree(int size, bool random) {
 	srand((unsigned)time(nullptr));
 
 	Tree tr;
 
 	for (int i = 0; i < size; i++) {
-		tr.randomizedInsert(tr.root, i);
+		tr.randomizedInsert(tr.root, random ? rand() : i);
 	}
 
 	return tr;
 }
 
 int main() {
-	
+	std::cout << "random\n" << std::endl;
+	std::cout << "=======BST=======" << std::endl;
+	std::cout << "size\theight" << std::endl;
+	for (int i = 1000; i <= 10000; i += 1000) {
+		Tree tr = Tree::genTree(i, true);
+		std::cout << i << "\t" << tr.getHeight(tr.root) << std::endl;
+	}
+
+	std::cout << "\n=======RBST=======" << std::endl;
+	std::cout << "size\theight" << std::endl;
+	for (int i = 1000; i <= 10000; i += 1000) {
+		Tree tr = Tree::genRandomizedTree(i, true);
+		std::cout << i << "\t" << tr.getHeight(tr.root) << std::endl;
+	}
+
+	std::cout << "\n\n\nordered\n" << std::endl;
+	std::cout << "=======BST=======" << std::endl;
+	std::cout << "size\theight" << std::endl;
+	for (int i = 100; i <= 1000; i += 100) {
+		Tree tr = Tree::genTree(i, false);
+		std::cout << i << "\t" << tr.getHeight(tr.root) << std::endl;
+	}
+
+	std::cout << "\n=======RBST=======" << std::endl;
+	std::cout << "size\theight" << std::endl;
+	for (int i = 1000; i <= 10000; i += 1000) {
+		Tree tr = Tree::genRandomizedTree(i, false);
+		std::cout << i << "\t" << tr.getHeight(tr.root) << std::endl;
+	}
 
 	return 0;
 }

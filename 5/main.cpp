@@ -227,7 +227,7 @@ void Tree::fixSize(Node* node) {
 
 // Получить высоту дерева
 int Tree::getHeight(Node* node) {
-	if (!node) return -1;
+	if (!node) return 0;
 
 	int leftHeight = getHeight(node->left);
 	int rightHeight = getHeight(node->right);
@@ -295,7 +295,7 @@ Tree Tree::genRandomizedTree(int size, bool random) {
 }
 
 int main() {
-	std::cout << "random\n" << std::endl;
+	/*std::cout << "random\n" << std::endl;
 	std::cout << "=======BST=======" << std::endl;
 	std::cout << "size\theight" << std::endl;
 	for (int i = 1000; i <= 10000; i += 1000) {
@@ -323,7 +323,18 @@ int main() {
 	for (int i = 1000; i <= 10000; i += 1000) {
 		Tree tr = Tree::genRandomizedTree(i, false);
 		std::cout << i << "\t" << tr.getHeight(tr.root) << std::endl;
-	}
+	}*/
 
+	Tree tr = Tree();
+
+	tr.insert(1500);
+	tr.insert(2000);
+	tr.insert(1000);
+	tr.insert(1250);
+	tr.insert(1750);
+
+	tr.print();
+
+		
 	return 0;
 }

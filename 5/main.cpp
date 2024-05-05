@@ -17,7 +17,6 @@ public:
 	Node* root;
 	Tree() : root(nullptr) {};
 	Node* insert(int key);
-	Node* insert(Node* root, int key);
 	Node* insert(Node* root, Node* parent, int key);
 	Node* insertAtRoot(Node* node, int key);
 	Node* randomizedInsert(Node* node, int key);

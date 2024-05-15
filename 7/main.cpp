@@ -7,7 +7,7 @@
 #define SURNAMES_FILE "C:\\Uni\\aisd_labs_sem4\\7\\surnames.txt"
 #define FILE_LINES 2000
 #define UNIQUE_LINES 1735
-#define CAPACITY 511
+#define CAPACITY 512
 
 struct Person {
 	char* surname;
@@ -73,6 +73,7 @@ public:
 	void insert(int key, Person value);
 	void print();
 	void printCollisions();
+	void calcChiSquared();
 };
 
 int HashTable::hashFunction(int key) {
@@ -152,6 +153,23 @@ void HashTable::printCollisions() {
 	std::cout << "[INFO] Avg collisions: " << (double)totalCol / totalPages << std::endl;
 }
 
+void HashTable::calcChiSquared() {
+	double sum = 0;
+	int numOfEl = 0;
+	for (int i = 0; i < CAPACITY; i++) {
+
+		auto bIter = table[i].begin();
+		for (; bIter != table[i].end(); bIter++) {
+			numOfEl++;
+		}
+
+		sum += std::pow((numOfEl - (double)UNIQUE_LINES / CAPACITY), 2);
+		numOfEl = 0;
+	}
+
+	std::cout << "[INFO] Chi-squared equals to: " << (double)CAPACITY / UNIQUE_LINES * sum << std::endl;
+}
+
 int main() {
 	system("chcp 65001 > nul");
 	srand((unsigned)time(nullptr));
@@ -163,8 +181,9 @@ int main() {
 		ht.insert(ht.generateKey(p1), p1);
 
 
-	ht.printCollisions();
+	// ht.printCollisions();
 	// ht.print();
+	ht.calcChiSquared();
 
 	return 0;
 }
